@@ -1,0 +1,9 @@
+apiVersion: wordpress.cloud104.io/v1alpha1
+kind: WordpressSite
+metadata:
+  labels:
+    app.kubernetes.io/name: wordpress-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: wordpresssite-sample
+spec:
+  # TODO(user): Add fields here

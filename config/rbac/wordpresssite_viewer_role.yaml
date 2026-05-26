@@ -1,0 +1,29 @@
+# This rule is not used by the project wordpress-operator itself.
+# It is provided to allow the cluster admin to help manage permissions for users.
+#
+# Grants read-only access to wordpress.cloud104.io resources.
+# This role is intended for users who need visibility into these resources
+# without permissions to modify them. It is ideal for monitoring purposes and limited-access viewing.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: wordpress-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: wordpresssite-viewer-role
+rules:
+- apiGroups:
+  - wordpress.cloud104.io
+  resources:
+  - wordpresssites
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - wordpress.cloud104.io
+  resources:
+  - wordpresssites/status
+  verbs:
+  - get
