@@ -24,7 +24,7 @@ Este repositório contém a implementação de um Kubernetes Operator desenvolvi
 **Próximos Passos:** * Executar o *scaffold* do Kubebuilder.
 * Criar a API (CRD) `WordpressSite` mapeando o *Spec* e o *Status*.
 
-**Pontos Intermediários:**
+**Pontos Intermediários do Passo1:**
 * Montagem do esqueleto do operator, utilizando os comandos exigidos pelo desafio
 
 1.Inicializar o módulo Go e o domínio do Operator:
@@ -38,6 +38,14 @@ kubebuilder create api --group wordpress --version v1alpha1 --kind WordpressSite
 3.Baixar a biblioteca de Reconciler exigida pelo time:
 
 go get github.com/cloud104/reconciler/v2@latest
+
+### [26/05/2026] - Passo 2: O Contrato (API / CRD)
+**Objetivo:** Modelar a API declarativa do `WordpressSite`, definindo o estado desejado (`Spec`) e o estado observado (`Status`).
+
+**Ações Realizadas:**
+* Edição do arquivo `api/v1alpha1/wordpresssite_types.go` para mapear os requisitos da Seção 4 do desafio.
+* Utilização de *markers* do Kubebuilder (`//+kubebuilder:...`) para definir validações, valores default e colunas personalizadas no terminal (`kubectl get`).
+* Geração dos manifestos YAML das CRDs através do comando `make manifests`.
 
 
 
