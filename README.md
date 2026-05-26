@@ -51,6 +51,7 @@ go get github.com/cloud104/reconciler/v2@latest
 * Modelagem da API
 
 1.WordpressSite?
+
 O Kubernetes precisa entender o que é um `WordpressSite`.
 O arquivo que define isso é o `api/v1alpha1/wordpresssite_types.go`.
 Serão estruturadas todas as structs(`Spec` e `Status`).
@@ -64,6 +65,7 @@ Serão adicionados os "Markers" que acabam sendo comentários especiais que ensi
 `go.mod` passou a apresentar erros como "github.com/cloud104/reconcilier/v2 is not used in this module"
 
 2.Manifestos
+
 Nessa etapa todo código Go irá se transformar em YAML de CRD que será interpretado pelo cluster.
 Se tudo for bem sucedido, novos arquivos deverão ser criados no diretório `config/crd/bases/`.
 
