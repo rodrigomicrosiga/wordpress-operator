@@ -7,7 +7,7 @@ Este repositório contém a implementação de um Kubernetes Operator desenvolvi
 ## 🚀 Diário de Desenvolvimento
 
 ### [22/05/2026] - Desafio Recebido
-** Objetivo:** Entendimento de todo escopo
+**Objetivo:** Entendimento de todo escopo
 
 ### [23/05/2026] - Estudos
 ### [24/05/2026] - Estudos
