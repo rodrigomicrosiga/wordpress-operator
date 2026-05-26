@@ -24,7 +24,7 @@ Este repositório contém a implementação de um Kubernetes Operator desenvolvi
 **Próximos Passos:** * Executar o *scaffold* do Kubebuilder.
 * Criar a API (CRD) `WordpressSite` mapeando o *Spec* e o *Status*.
 
-**Pontos Intermediários do Passo1:**
+**Pontos Importantes do Passo 1:**
 * Montagem do esqueleto do operator, utilizando os comandos exigidos pelo desafio
 
 1.Inicializar o módulo Go e o domínio do Operator:
@@ -47,5 +47,27 @@ go get github.com/cloud104/reconciler/v2@latest
 * Utilização de *markers* do Kubebuilder (`//+kubebuilder:...`) para definir validações, valores default e colunas personalizadas no terminal (`kubectl get`).
 * Geração dos manifestos YAML das CRDs através do comando `make manifests`.
 
+**Pontos Importantes do Passo 2:**
+* Modelagem da API
+
+1.WordpressSite?
+O Kubernetes precisa entender o que é um `WordpressSite`.
+O arquivo que define isso é o `api/v1alpha1/wordpresssite_types.go`.
+Serão estruturadas todas as structs(`Spec` e `Status`).
+Serão adicionados os "Markers" que acabam sendo comentários especiais que ensinam o Kubernetes a validar os dados e incluir valores default (exemplo: `replicas: 1`)
+
+**IMPORTANTE:**
+* Problemas ao alterar o arquivo `api/v1alpha1/wordpresssite_types.go`.
+
+`api/v1alpha1/zz_generate.deepcopy.go` passou a apresentar erros como "has no field or method Foo"
+
+`go.mod` passou a apresentar erros como "github.com/cloud104/reconcilier/v2 is not used in this module"
+
+2.Manifestos
+Nessa etapa todo código Go irá se transformar em YAML de CRD que será interpretado pelo cluster.
+Se tudo for bem sucedido, novos arquivos deverão ser criados no diretório `config/crd/bases/`.
+
+make generate
+make manifests
 
 
