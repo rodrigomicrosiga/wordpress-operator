@@ -62,7 +62,11 @@ Serão adicionados os "Markers" que acabam sendo comentários especiais que ensi
 
 `api/v1alpha1/zz_generate.deepcopy.go` passou a apresentar erros como "has no field or method Foo"
 
+**O arquivo em destaque ficou desatualizado e provavelmente será atualizado após a execução do `make generate`.**
+
 `go.mod` passou a apresentar erros como "github.com/cloud104/reconcilier/v2 is not used in this module"
+
+**Inconsistência entre o que tenho de local e o que foi baixado, e provavelmente será atualizado após a execução do `go mod tidy` que irá varrer o projeto, remover o que não é necessário e realizar download do que está faltando.**
 
 2.Manifestos
 
@@ -70,6 +74,9 @@ Nessa etapa todo código Go irá se transformar em YAML de CRD que será interpr
 Se tudo for bem sucedido, novos arquivos deverão ser criados no diretório `config/crd/bases/`.
 
 make generate
+
 make manifests
+
+go mod tidy
 
 
