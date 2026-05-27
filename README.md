@@ -87,4 +87,12 @@ go mod tidy
 * Implementação de funções puras que recebem a CRD `WordpressSite` e retornam objetos nativos do Kubernetes (`corev1`, `appsv1`, `networkingv1`).
 * Mapeamento de relacionamentos como injeção de `Secrets` como variáveis de ambiente e definição de `VolumeClaimTemplates` para persistência de dados.
 
+### [26/05/2026] - Passo 4: Implementação da Chain of Responsibility (Ensurers)
+**Objetivo:** Criar os elos de reconciliação utilizando a biblioteca `cloud104/reconciler`.
+
+**Ações Realizadas:**
+* Criação do diretório `internal/controller/wordpresssite/` para abrigar os ensurers isolados.
+* Implementação do `DatabaseSecretEnsurer`, garantindo a geração segura e idempotente da senha do MySQL (gerada apenas na primeira execução e preservada nas seguintes).
+* Uso de `controllerutil.CreateOrUpdate` para mutação segura de estado e `SetControllerReference` para Garbage Collection automático.
+
 

@@ -3,6 +3,7 @@ module github.com/rodrigomicrosiga/wordpress-operator
 go 1.25.7
 
 require (
+	github.com/cloud104/reconciler/v2 v2.0.1
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	k8s.io/api v0.35.0
