@@ -79,4 +79,12 @@ make manifests
 
 go mod tidy
 
+### [26/05/2026] - Passo 3: Factory Pattern (Geração Pura de Manifestos)
+**Objetivo:** Isolar a definição da infraestrutura (O *Shape* dos recursos) da lógica de reconciliação (O *Action*).
+
+**Ações Realizadas:**
+* Criação do pacote `internal/factory/factory.go`.
+* Implementação de funções puras que recebem a CRD `WordpressSite` e retornam objetos nativos do Kubernetes (`corev1`, `appsv1`, `networkingv1`).
+* Mapeamento de relacionamentos como injeção de `Secrets` como variáveis de ambiente e definição de `VolumeClaimTemplates` para persistência de dados.
+
 
