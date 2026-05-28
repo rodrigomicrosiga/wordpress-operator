@@ -119,3 +119,19 @@ go mod tidy
 * Implementação de proteções lógicas para campos imutáveis da API do Kubernetes (como `VolumeClaimTemplates` no StatefulSet e especificações de PVC) através da validação `obj.CreationTimestamp.IsZero()`.
 * Vinculação de todos os recursos criados ao objeto pai (`WordpressSite`) via `SetControllerReference`, assegurando o *Garbage Collection* nativo na deleção do operator.
 
+### [28/05/2026] - Passo 6: Observabilidade e Fechamento do Controlador
+**Objetivo:** Implementar o reporte de status em tempo real e registrar o Operator no Kubernetes com seus gatilhos de escuta.
+
+**Ações Realizadas:**
+* Criação do `StatusEnsurer` para avaliar se os *Pods* do banco e da aplicação atingiram o estado `Ready` antes de atualizar a CRD.
+* Refatoração do `wordpresssite_controller.go` para inicializar a *Chain of Responsibility* via `r.buildChain()`.
+* Mapeamento de RBAC (`//+kubebuilder:rbac`) para conceder privilégios ao Operator para manipular os recursos *core*, *apps* e *networking*.
+* Configuração do `SetupWithManager` utilizando `Owns()` para garantir a re-reconciliação imediata caso um usuário ou processo modifique os recursos gerenciados indevidamente.
+
+**Problemas**
+* `unnecessary type arguments` passou a ser apresentado após a alteração do `wordpresssite_controller.go`
+
+**Correção**
+* Na linha 45 informamos qual objeto a função `reconciler.Chain` iria manipular. Porém todos os `ensurers` já tem o tipo `*WordpressSite` embutido e com isso praticamente o Go avisa que não precisa reescrever o tipo.
+* `internal/controller/wordpresssite_controller.go` foi removida a declaração explícita `*wordpressv1alpha1.WordpressSite]`
+
