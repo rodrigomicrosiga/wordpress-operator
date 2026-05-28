@@ -1,0 +1,11 @@
+apiVersion: wordpress.cloud104.io/v1alpha1
+kind: WordpressSite
+metadata:
+  name: meu-blog
+spec:
+  domain: blog.local
+  wordpress:
+    replicas: 1
+  database:
+    name: wordpress
+    user: wordpress

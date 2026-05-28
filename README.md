@@ -161,3 +161,27 @@ make run
 
 Nessa etapa o terminal fica apresentando logs de inicialização.
 
+**Manifesto**
+
+* Em uma outra sessão de terminal foi realizada a criação de um diretorio `mkdir teste` e a criação do arquivo `touch teste.yaml`.
+
+kubectl apply -f teste.yaml
+
+Com essa ação foi possível verificar que o cluster respondeu corretamente e atualizou as informações:
+
+* Nesse ponto solicitei ajuda para a IA com o propósito de entender tudo que de fato estava sendo realizado pelo cluster nesse momento. Então foi possível entender que a `Chain of Responsibility` foi ativada em milisegundos, loop de reconciliação passando por cada `Ensurer`, gerando a senha forte, subindo o `StatefulSet` do banco, montando os PVCs e por fim o Deployment do WordPress.
+
+* Visualizar a tabela customizada criada via api
+
+kubectl get wordpresssite
+
+* Visualizar toda infraestrutura materializada via código
+
+kubectl get all,pvc,ingress,secret
+
+* Testar a deleção (Garbage Collection)
+
+kubectl delete wordpresssite meu-blog
+
+
+
