@@ -207,7 +207,57 @@ kubectl port-forward svc/meu-blog 8080:80
 
 * Ao tentar realizar o acesso via `http://127.0.0.1:8080` não foi apresentada a tela de instalação do WordPress (apresentado `Error establishing a database connection`)
 
-**Entendimento e correção em andamento**
+**Entendimento do Problema**
 
+O entendimento inicial foi superficial e na linha "teoricamente o database ainda não estava pronto no momento em que tentei acessar".
 
+Indo por essa linha realizei a parada do direcionamento de porta (`ctrl+c`) e forcei a exclusão do pod `kubectl delete pod -l app.kubernetes.io/component=application`.
+
+Aguardei alguns segundos para a subida de um novo pod, realizei a consulta via `kubectl get pods` e obtive o status `Running`em ambos, e na sequencia realizei `kubectl port-forward svc/meu-blog 8080:80`.
+
+Porém ao tentar acessar o endereço `http://localhost:8080` ainda estava sendo apresentado o erro.
+
+Com a ajuda da IA, foi possível obter informações importantes sobre `PVC` e o ciclo de vida do `StatefulSet`.
+
+Como isso entendi que ao utilizar o `delete` praticamente o operator:
+* eliminou o Deployment
+* eliminou o Service
+* eliminou o Secret (senha)
+* eliminou o StatefulSet do MySQL
+
+Ao deletar o `StatefulSet` o Kubernetes não elimina os discos (PVC) criados pelo `VolumeClaimTemplates`.
+
+Ao realizar novamente a aplicação do `teste.yaml` foi gerado um novo `Secret`, o `StatefulSet` novo subir e se reconectou ao antigo disco que ainda existia. O MySQL percebeu que o disco ainda existia, ignorou a nova senha, mantendo o que já estava gravado no database.
+
+O WordPress leu o novo `Secret`, tentou conectar com a senha nova, porém o banco exigia a senha antiga, resultando no erro `Error establishing a database connection`.
+
+**Correção**
+
+* Deletar a aplicação
+
+kubectl delete wordpresssite meu-blog
+
+* Verificar os PVCs que ainda podem existir
+
+kubectl get pvc
+
+Nesse momento foi possível verificar o PVC que ainda existia.
+
+* Deletar o PVC
+
+kubectl delete pvc mysql-data-meu-blog-mysql-0
+
+* Aplicar novamente
+
+kubectl apply -f teste.yaml
+
+* Aguardar a subida e consultar os pods (estado esperado `Running`)
+
+kubectl get pods
+
+* Direcionamento de portas
+
+kubectl port-forward svc/meu-blog 8080:80
+
+Sucesso ao acessar o endereço `http://localhost:8080` onde foi apresentada a tela de instalação do WordPress.
 
