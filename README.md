@@ -135,3 +135,29 @@ go mod tidy
 * Na linha 45 informamos qual objeto a função `reconciler.Chain` iria manipular. Porém todos os `ensurers` já tem o tipo `*WordpressSite` embutido e com isso praticamente o Go avisa que não precisa reescrever o tipo.
 * `internal/controller/wordpresssite_controller.go` foi removida a declaração explícita `*wordpressv1alpha1.WordpressSite]`
 
+make manifests (que fará a leitura dos novos RBACS)
+
+make generate
+
+**Execução via Cluster**
+
+* Preciso garantir que o Kind esteja rodando
+
+kind get clusters
+
+* Como nenhum cluster havia sido criado
+
+kind create cluster (criação do cluster)
+
+kubectl get nodes (para verificação)
+
+* Apresentar ao Kubernetes o que será compilado
+
+make install
+
+* Iniciar o Operator
+
+make run
+
+Nessa etapa o terminal fica apresentando logs de inicialização.
+
