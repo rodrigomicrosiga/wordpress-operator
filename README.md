@@ -183,5 +183,31 @@ kubectl get all,pvc,ingress,secret
 
 kubectl delete wordpresssite meu-blog
 
+**Religando o Operator e Recriando a Infraestrutura**
+
+* Religando o operator
+
+make run (terminal principal)
+
+* Recriando a infra
+
+kubectl apply -f teste.yaml (terminal secundário)
+
+* Aguardando a inicialização
+
+kubectl get pods (aqui o status esperado é `Running` e `Ready`)
+
+**Definition Of Done (Seção 9)**
+
+* Tentativa de acesso via navegador:
+
+kubectl port-forward svc/meu-blog 8080:80
+
+**Problema**
+
+* Ao tentar realizar o acesso via `http://127.0.0.1:8080` não foi apresentada a tela de instalação do WordPress (apresentado `Error establishing a database connection`)
+
+**Entendimento e correção em andamento**
+
 
 
