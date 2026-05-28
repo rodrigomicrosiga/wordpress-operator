@@ -57,16 +57,18 @@ O arquivo que define isso é o `api/v1alpha1/wordpresssite_types.go`.
 Serão estruturadas todas as structs(`Spec` e `Status`).
 Serão adicionados os "Markers" que acabam sendo comentários especiais que ensinam o Kubernetes a validar os dados e incluir valores default (exemplo: `replicas: 1`)
 
-**IMPORTANTE:**
+**Problemas:**
 * Problemas ao alterar o arquivo `api/v1alpha1/wordpresssite_types.go`.
+* `api/v1alpha1/zz_generate.deepcopy.go` passou a apresentar erros como "has no field or method Foo"
 
-`api/v1alpha1/zz_generate.deepcopy.go` passou a apresentar erros como "has no field or method Foo"
+**Correção**
+* Execução do `make generate`.
 
-**O arquivo em destaque ficou desatualizado e provavelmente será atualizado após a execução do `make generate`.**
+**Problemas**
+* `go.mod` passou a apresentar erros como "github.com/cloud104/reconcilier/v2 is not used in this module"
 
-`go.mod` passou a apresentar erros como "github.com/cloud104/reconcilier/v2 is not used in this module"
-
-**Inconsistência entre o que tenho de local e o que foi baixado, e provavelmente será atualizado após a execução do `go mod tidy` que irá varrer o projeto, remover o que não é necessário e realizar download do que está faltando.**
+**Correção**
+* Inconsistência entre o que tenho de local e o que foi baixado, executado `go mod tidy` removendo o que não é necessário e realizando download do que está faltando
 
 2.Manifestos
 
@@ -95,4 +97,25 @@ go mod tidy
 * Implementação do `DatabaseSecretEnsurer`, garantindo a geração segura e idempotente da senha do MySQL (gerada apenas na primeira execução e preservada nas seguintes).
 * Uso de `controllerutil.CreateOrUpdate` para mutação segura de estado e `SetControllerReference` para Garbage Collection automático.
 
+### [27/05/2026] - Estudos e Entendimento das Correções
+**Objetivo:** Entender a quebra ocorrida após a alteração no arquivo `internal/controller/wordpresssite/secret_ensurer.go`
+
+**IMPORTANTE**
+* O erro acima provavelmente se refere a alguma incompatibilidade entre a função `Reconcile` e a biblioteca `cloud104/reconciler`. Nesse tópico de resolução utilizei IA para entender mais a fundo e com isso foi possível verificar que o retorno estava definido como `reconciler.Result, error` e a biblioteca do time reaproveita o tipo nativo do Kubernetes que é `Result` e faz parte do pacote `controller-runtime`.
+* No item 2 da seçaõ 3 é exigido o uso do pacote `ctrl`. E as funções `e.Next()` e `e.RequeueOnErr()` retornam `ctrl.Result` houve uma quebra ao tentar devolver isso como um `reconciler.Result`.
+
+**CORREÇÃO**
+* `internal/controller/wordpresssite/secret_ensurer.go`
+* Inclusão do alias `ctrl` no import.
+* Alteração da função substituindo `reconciler.Result` por `ctrl.Result`. 
+* Realizado `go mod tidy` para atualização de referências.
+
+### [28/05/2026] - Passo 5: Implementação dos Workload Ensurers (Idempotência Estrutural)
+**Objetivo:** Consolidar os elos da corrente de reconciliação responsáveis pela infraestrutura base da aplicação (Banco de Dados, Aplicação, Storage e Rede) garantindo idempotência e ciclo de vida atrelado ao CRD.
+
+**Ações Realizadas:**
+* Criação do arquivo `internal/controller/wordpresssite/workload_ensurers.go` agrupando os ensurers estruturais (StatefulSet, Deployment, Services, ConfigMap, PVC e Ingress).
+* Utilização da função `controllerutil.CreateOrUpdate` em todos os recursos para garantir que o estado real do cluster sempre convirja para o estado desejado definido pela *Factory*.
+* Implementação de proteções lógicas para campos imutáveis da API do Kubernetes (como `VolumeClaimTemplates` no StatefulSet e especificações de PVC) através da validação `obj.CreationTimestamp.IsZero()`.
+* Vinculação de todos os recursos criados ao objeto pai (`WordpressSite`) via `SetControllerReference`, assegurando o *Garbage Collection* nativo na deleção do operator.
 

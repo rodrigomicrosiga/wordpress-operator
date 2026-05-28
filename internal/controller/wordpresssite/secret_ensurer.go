@@ -13,6 +13,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -24,7 +25,7 @@ type DatabaseSecretEnsurer struct {
 	Scheme *runtime.Scheme
 }
 
-func (e *DatabaseSecretEnsurer) Reconcile(ctx context.Context, site *v1alpha1.WordpressSite) (reconciler.Result, error) {
+func (e *DatabaseSecretEnsurer) Reconcile(ctx context.Context, site *v1alpha1.WordpressSite) (ctrl.Result, error) {
 	secretName := fmt.Sprintf("%s-mysql-secret", site.Name)
 	existingSecret := &corev1.Secret{}
 
