@@ -338,7 +338,7 @@ Kind (para criação do cluster local)
 
 * Criação do cluster local
 
-`kind create cluster`
+`kind create cluster` ou `kind get clusters` (para verificar se já existe algum cluster local)
 
 * Sincronizar dependências Go
 
@@ -407,6 +407,97 @@ Aguarde novamente os novos Pods ficarem com o status Running:
 * Acesse a nova instância
 
 `kubectl port-forward svc/meu-blog 8080:80`
+
+**Execução no Cluster "Francis"**
+
+1.Utilizando o cluster desejado:
+
+* Verifique se o contexto do cluster desejado está disponível
+
+`kubectl config get-contexts`
+
+* Altere para o contexto desejado
+
+`kubectl config use-context francis`
+
+O retorno esperado é algo como `Switched to context "francis"`.
+
+* Confirme que está visualizando os servidores do cluster-remoto
+
+`kubectl get nodes`
+
+2.Empacotar e publicar o operator:
+
+O cluster remoto precisar baixar o `Operator`de algum local público, então criaremos a imagem e enviaremos ao `Docker Hub`.
+
+* Login Docker
+
+`docker login`
+
+Nessa etapa será solicitada a autenticação via browser e a confirmação de um código fornecido via terminal
+
+* Construção e publicação da imagem
+
+`make docker-build docker-push IMG=rodrigomicrosiga/wordpress-operator:v1.0.0`
+
+Nessa etapa será realizada build da imagem e publicação
+
+3.Instalação do operator no cluster "Francis"
+
+* Deploy
+
+`make deploy IMG=rodrigomicrosiga/wordpress-operator:v1.0.0`
+
+Nessa etapa será criado um `namespace` chamado `wordpress-operator-system` e disponibilizado o operator.
+
+* Validar a subida do Operator
+
+Verifique se está rodando sem erros
+
+`kubectl get pods -n wordpress-operator-system`
+
+Será apresentado um retorno informando o `namespace` e o `status` de execução.
+
+4.Verificar IP e criar um endereço válido
+
+Será usado um serviço gratuito `nip.io` que transforma qualquer IP público em um domínio válido.
+
+* Verificar o IP público do ingress
+
+`kubectl get svc -A | grep -i ingress`
+
+Nessa etapa é necessário anotar o IP público apresentado na coluna `EXTERNAL-IP` (201.157.243.78).
+
+* Descobrir o IngressClass
+
+Necessário verificar qual controlador de Ingress o "Francis" usa:
+
+`kubectl get ingressclass`
+
+Nessa etapa é necessário anotar o nome (`nginx`)
+
+* Montar a URL de acesso
+
+Junção do IP com o `nip.io`, então será algo como `meu-blog.201.157.243.78.nip.io`
+
+5.Implantação da aplicação e entrega
+
+Criação do site WordPress no cluster "Francis".
+
+* Edição do manifesto
+
+Nessa etapa devem ser alterados os campos `domain` e `ingressClassName` do arquivo `teste.yaml` com os dados reais.
+
+`domain: meu-blog.201.157.243.78.nip.io`
+`ingressClassName: nginx`
+
+* Aplicar o manifesto
+
+`kubectl apply -f teste.yaml`
+
+
+
+
 
 
 

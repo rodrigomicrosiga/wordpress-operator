@@ -3,8 +3,7 @@ kind: WordpressSite
 metadata:
   name: meu-blog
 spec:
-  domain: meu-blog.201.157.243.78.nip.io
-  ingressClassName: nginx
+  domain: blog.local
   wordpress:
     replicas: 1
   database:
