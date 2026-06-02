@@ -315,6 +315,105 @@ O retorno `No resources found in default namespace` indica que não existe nenhu
 
 Com isso foi possível entender que o `Kubernetes` ao deletar o `WordpressSite` leu o `OwnerReference` que foi injetado e eliminou automaticamente junto com os demais itens da infraestrutura.
 
+**Executar Projeto**
+
+1.Pré-requisitos:
+
+* Infraestrutura básica:
+
+Go (1.24+)
+
+Docker
+
+Kubectl (linha de comando do K8S)
+
+Kind (para criação do cluster local)
+
+2.Prepação do ambiente e cluster
+
+* Clone do projeto
+
+`git clone https://github.com/SEU_USUARIO/wordpress-operator.git`
+`cd wordpress-operator`
+
+* Criação do cluster local
+
+`kind create cluster`
+
+* Sincronizar dependências Go
+
+`go mod tidy`
+
+3.Subida do Operator
+
+* Instalar CRD no cluster
+
+`make install`
+
+* Inicie o Operator
+
+`make run`
+
+4.Valide a execução
+
+* Aplique o manifesto
+
+`kubectl apply -f teste.yaml`
+
+* Verifique o status dos pods
+
+`kubectl get pods -w`
+
+5.A criação e direcionamento de porta
+
+* Port-forward
+
+`kubectl port-forward svc/meu-blog 8080:80`
+
+* Acesse o navegador
+
+`http://localhost:8080`
+
+6.O Teste de deleção
+
+* Teste de deleção
+
+`kubectl delete wordpresssite meu-blog`
+
+* Comprove a exclusão da infraestrutura
+
+`kubectl get all`
+
+* Comprove a exclusão do PVC
+
+`kubectl get pvc`
+
+7.Subida automática e nova criação de disco
+
+* Reaplique o manifesto
+
+`kubectl apply -f teste.yaml`
+
+* Valide a criação do novo disco (PVC)
+
+`kubectl get pvc`
+
+* Valide a subida da nova aplicação:
+
+Aguarde novamente os novos Pods ficarem com o status Running:
+
+`kubectl get pods`
+
+* Acesse a nova instância
+
+`kubectl port-forward svc/meu-blog 8080:80`
+
+
+
+
+
+
+
 
 
 
