@@ -495,6 +495,14 @@ Nessa etapa devem ser alterados os campos `domain` e `ingressClassName` do arqui
 
 `kubectl apply -f teste.yaml`
 
+* Monitoramento da subida
+
+`kubectl get pods` e observe o status como `Running`
+
+Se houver a necessidade de voltar a executar de forma local:
+
+`kubectl config use-context kind-kind`
+
 
 
 
