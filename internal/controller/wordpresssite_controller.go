@@ -45,6 +45,10 @@ func (r *WordpressSiteReconciler) buildChain() reconciler.Handler[*wordpressv1al
 	return reconciler.Chain(
 		&wordpresssite.DatabaseSecretEnsurer{Client: r.Client, Scheme: r.Scheme},
 		&wordpresssite.DatabaseStatefulSetEnsurer{Client: r.Client, Scheme: r.Scheme},
+
+		// NOVO ENSURER ADICIONADO AQUI:
+		&wordpresssite.DatabasePVCOwnerEnsurer{Client: r.Client, Scheme: r.Scheme},
+
 		&wordpresssite.DatabaseServiceEnsurer{Client: r.Client, Scheme: r.Scheme},
 		&wordpresssite.WordpressConfigMapEnsurer{Client: r.Client, Scheme: r.Scheme},
 		&wordpresssite.WordpressPVCEnsurer{Client: r.Client, Scheme: r.Scheme},

@@ -261,3 +261,63 @@ kubectl port-forward svc/meu-blog 8080:80
 
 Sucesso ao acessar o endereço `http://localhost:8080` onde foi apresentada a tela de instalação do WordPress.
 
+### [01/06/2026] - Estudos
+
+### [02/06/2026] - Novas Implementações
+
+* Implementar regra para que o OwnerReference não permita PVC orfão ao realizar o delete da aplicação
+
+Nessa situação, foi possível entender que o `StatefulSet`cria os PVCs de forma dinâmica através do `VolumeClaimTemplates` porém não repassa de forma automática a `OwnerReference` do `Wordpresssite` para os discos.
+
+E para atender ao requisito, foi necessário:
+
+* Criar o arquivo `internal/controller/wordpresssite/pvc_owner_ensurer.go` para que seja criado um elo de paternidade.
+
+Feito isso, se tornou necessário informar ao operator em que momento isso deverá ocorrer, e o mais ideal é que seja após a reconciliação do `Statefulset`.
+
+E para isso foi necessário: 
+
+* Realizar a alteração da função `buildChain` no arquivo `internal/controller/wordpresssite_controller.go` inserindo o novo `DatabasePVCOwnerEnsurer`.
+
+**Testes**
+
+Para facilitar a utilização de "n" terminais foi adoto a utilização do `Tilix`.
+
+* Terminal 1.
+
+Executado `make run` para compilação do código atualizado.
+
+* Terminal 2.
+
+Executado `kubectl apply -f teste.yaml` para recriar a aplicação aplicando o manifesto para criação de toda infraestrutura.
+
+* Terminal 3.
+
+Aguardar alguns segundos para criação via `StatefulSet` e o operator injetar a referência. Com isso poderemos inspecionar o manifesto do PVC gerado no cluster.
+
+Executado `kubectl get pvc mysql-data-meu-blog-mysql-0 -o yaml`
+
+Agora devemos procurar no retorno a seção `metadata` e verificar se existe o bloco `ownerReferences` que relaciona o disco ao CRD.
+
+* Terminal 4.
+
+Vamos simular a remoção da aplicação.
+
+Executado `kubectl delete wordpresssite meu-blog`
+
+* Terminal 5.
+
+Vamos verificar e garantir que o PVC orfão não existe mais no cluster.
+
+Executado `kubectl get pvc`
+
+O retorno `No resources found in default namespace` indica que não existe nenhum PVC orfão.
+
+Com isso foi possível entender que o `Kubernetes` ao deletar o `WordpressSite` leu o `OwnerReference` que foi injetado e eliminou automaticamente junto com os demais itens da infraestrutura.
+
+
+
+
+
+
+
