@@ -82,6 +82,26 @@ export IMG=rodrigomicrosiga/wordpress-operator:v1.0.1
 make docker-build docker-push IMG=$IMG
 ```
 
+2. Faça o Build e publique a imagem no Container Registry efêmero e anônimo (`ttl.sh`)
+
+O grande "pulo do gato" é que você não precisa fazer `docker login` e não precisa criar conta.\
+Você simplesmente faz o push, o cluster remoto faz o pull, e depois de um tempo a imagem se autodestrói, sem deixar lixo para trás.\
+A "mágica" do tempo de vida útil fica direto na tag da imagem.\
+Os formatos de tempo suportados são `minutos (m), horas (h) ou dias (d)`, com limite máximo de 24 horas.\
+Como o registro é público, é bom usar um nome bem específico (ou até um `UUID`) para evitar que outra pessoa use o mesmo nome.
+
+```Bash
+# Gerar UUID
+uuidgen
+
+# Exemplo de retorno
+c8a4aa2f-d279-4d10-9437-13d7cf9df030
+
+# Exporte sua imagem e faça o build/push
+export IMG=ttl.sh/c8a4aa2f-d279-4d10-9437-13d7cf9df030:2h
+make docker-build docker-push IMG=$IMG
+```
+
 3. Faça o Deploy do Operator no cluster:
 
 ```Bash
