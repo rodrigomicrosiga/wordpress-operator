@@ -36,19 +36,40 @@ type WordpressSpec struct {
 	StorageSize string `json:"storageSize,omitempty"`
 }
 
-// WordpressSiteSpec define o estado desejado pelo usuário (Spec)
+// TLSSpec configura HTTPS no Ingress usando o cert-manager.
+type TLSSpec struct {
+	// Enabled liga a emissão do certificado e o bloco TLS no Ingress.
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+
+	// IssuerName é o nome do (Cluster)Issuer do cert-manager que emite o cert.
+	// +optional
+	IssuerName string `json:"issuerName,omitempty"`
+
+	// IssuerKind escolhe entre "ClusterIssuer" (padrão) e "Issuer".
+	// +kubebuilder:validation:Enum=ClusterIssuer;Issuer
+	// +kubebuilder:default:="ClusterIssuer"
+	// +optional
+	IssuerKind string `json:"issuerKind,omitempty"`
+}
+
+// WordpressSiteSpec defines the desired state of WordpressSite
 type WordpressSiteSpec struct {
-	// +kubebuilder:validation:Required
 	Domain string `json:"domain"`
-
-	// +kubebuilder:validation:Required
-	Wordpress WordpressSpec `json:"wordpress"`
-
-	// +kubebuilder:validation:Required
-	Database DatabaseSpec `json:"database"`
 
 	// +optional
 	IngressClassName string `json:"ingressClassName,omitempty"`
+
+	// IngressAnnotations adiciona annotations livres no Ingress.
+	// +optional
+	IngressAnnotations map[string]string `json:"ingressAnnotations,omitempty"`
+
+	// TLS configura HTTPS via cert-manager.
+	// +optional
+	TLS *TLSSpec `json:"tls,omitempty"`
+
+	Wordpress WordpressSpec `json:"wordpress"`
+	Database  DatabaseSpec  `json:"database"`
 }
 
 // WordpressSiteStatus define o estado observado pelo Operator (Status)

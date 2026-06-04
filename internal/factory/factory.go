@@ -2,6 +2,7 @@ package factory
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/rodrigomicrosiga/wordpress-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -234,11 +235,16 @@ func BuildWordpressIngress(site *v1alpha1.WordpressSite) *networkingv1.Ingress {
 	labels := commonLabels(site, "application")
 	pathType := networkingv1.PathTypePrefix
 
+	// Annotations livres do usuário
+	annotations := map[string]string{}
+	maps.Copy(annotations, site.Spec.IngressAnnotations)
+
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      site.Name,
-			Namespace: site.Namespace,
-			Labels:    labels,
+			Name:        site.Name,
+			Namespace:   site.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: networkingv1.IngressSpec{
 			Rules: []networkingv1.IngressRule{{
@@ -263,6 +269,24 @@ func BuildWordpressIngress(site *v1alpha1.WordpressSite) *networkingv1.Ingress {
 
 	if site.Spec.IngressClassName != "" {
 		ingress.Spec.IngressClassName = &site.Spec.IngressClassName
+	}
+
+	// TLS via cert-manager (ingress-shim)
+	if site.Spec.TLS != nil && site.Spec.TLS.Enabled {
+		issuerKind := site.Spec.TLS.IssuerKind
+		if issuerKind == "" {
+			issuerKind = "ClusterIssuer"
+		}
+		if issuerKind == "Issuer" {
+			annotations["cert-manager.io/issuer"] = site.Spec.TLS.IssuerName
+		} else {
+			annotations["cert-manager.io/cluster-issuer"] = site.Spec.TLS.IssuerName
+		}
+
+		ingress.Spec.TLS = []networkingv1.IngressTLS{{
+			Hosts:      []string{site.Spec.Domain},
+			SecretName: fmt.Sprintf("%s-tls", site.Name),
+		}}
 	}
 
 	return ingress

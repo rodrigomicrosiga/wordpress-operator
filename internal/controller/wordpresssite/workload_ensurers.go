@@ -175,8 +175,10 @@ func (e *IngressEnsurer) Reconcile(ctx context.Context, site *v1alpha1.Wordpress
 
 	_, err := controllerutil.CreateOrUpdate(ctx, e.Client, obj, func() error {
 		obj.Labels = desired.Labels
+		obj.Annotations = desired.Annotations // NOVO: Garante a persistência das anotações do cert-manager
 		obj.Spec.Rules = desired.Spec.Rules
 		obj.Spec.IngressClassName = desired.Spec.IngressClassName
+		obj.Spec.TLS = desired.Spec.TLS // NOVO: Garante a persistência da configuração TLS
 		return controllerutil.SetControllerReference(site, obj, e.Scheme)
 	})
 	if err != nil {

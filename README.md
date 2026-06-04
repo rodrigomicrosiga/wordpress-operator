@@ -503,6 +503,139 @@ Se houver a necessidade de voltar a executar de forma local:
 
 `kubectl config use-context kind-kind`
 
+### [03/06/2026] - Estudos
+
+Verificado que o Cluster "Francis" faz uso de certificado digital e com base nisso o mano "Chris Corinthians" fez uma pequena documentação de direcionamento para utilização de DNS pré-configurado e uso de certificado digital controlado pelo operator.
+
+### [04/06/2026] - Implementação do certificado digital
+
+1.Atualização do CRD
+
+* `api/v1alpha1/wordpresssite_types.go`
+
+Adicionado a estrutura `TLSSpec` antes do `WordpressSiteSpec` e atualizado `WordpressSiteSpec` com os novos campos de anotação e `TLS`.
+
+2.Atualização do Factory (Geração do Ingress)
+
+* `internal/factory/factory.go`
+
+Alteração da função `BuildWordpressIngress` para injetar as anotações de forma dinamica.
+
+3.Atualização do Ensurer (Reconciliação)
+
+* `internal/controller/wordpresssite/workload_ensurers.go`
+
+Na função `IngressEnsurer.Reconcile` foi atualizada a função de mutação do `CreateOrUpdate` para garantir que o `Annotation` e o `TLS` não sejam perdidos no loop de reconciliação.
+
+4.Geração de Manifestos e Compilação
+
+* Executado a partir da raiz do projeto
+
+make manifests
+make generate
+
+Nessa etapa 2 novas ações foram sugeridas:
+
+`make lint-fix` para limpeza e padronização
+
+`make test` para qualidade do código
+
+5.Configuração do Manifesto Final (YAML)
+
+* `teste.yaml`
+
+Alterado para conter as configurações esperadas pelo Cluster "Francis".
+
+6.Publicação e Teste Definitivo
+
+* Empacotar a nova versão do Operator fazendo o envio ao Docker HUB
+
+`export IMG=rodrigomicrosiga/wordpress-operator:v1.0.1`
+`make docker-build docker-push IMG=$IMG`
+`make deploy IMG=$IMG`
+
+* Aguarde o novo pod do Operator subir
+
+`kubectl get pods -n wordpress-operator-system`
+
+* Aplique o manifesto
+
+`kubectl apply -f teste.yaml`
+
+* Validação no Cluster
+
+Monitorar a criação do certificado pelo `cert-manager` 
+
+Verificar o status `READY=True` do certificado pelo `kubectl get certificate -w`
+
+A partir desse status é possível acessar a URL `https://meu-blog.francis.tcloud-devops.cloudtotvs.com.br`.
+
+**Prova de Fogo**
+
+Vamos ao `Teste de Destruição` ou `Validação de Estado Limpo`.
+
+* Destruir a Aplicação - O Teste do Garbage Collection
+
+`kubectl delete -f teste.yaml`
+
+* Validar a Terra Arrasada
+
+Temos que garantir que o Kubernetes e o nosso Operator limparam toda a infraestrutura, sem deixar resquícios. 
+
+PODs e Serviços:
+
+`kubectl get all`
+
+Discos (PVC) - Lembra da nossa melhoria da OwnerReference? O disco tem que sumir!
+
+`kubectl get pvc`
+
+Ingress:
+
+`kubectl get ingress`
+
+Certificados TLS - O cert-manager precisa ter deletado o meu-blog-tls
+
+`kubectl get certificate,secret`
+
+* Reiniciar o Operator - Garantia de Imagem Nova
+
+Para termos 100% de certeza de que não há nada em cache na memória do Operator, vamos "matar" o Pod dele. O Kubernetes criará um novo Pod instantaneamente, forçando-o a ler o estado atual do zero.
+
+`kubectl delete pods --all -n wordpress-operator-system`
+
+Aguardar alguns segundos e validar se o novo Pod do Operator subiu e está `Running`:
+
+`kubectl get pods -n wordpress-operator-system`
+
+* O Renascimento (Criando do Zero)
+
+Com o terreno completamente limpo e o Operator reiniciado, vamos disparar a criação novamente:
+
+`kubectl apply -f teste.yaml`
+
+* Acompanhando a Mágica Acontecer
+
+Agora, ao invés de olhar só para os Pods, vamos olhar para o processo crítico que é a geração do Certificado SSL.
+
+`kubectl get certificate -w`
+
+Nascerá com `READY=False` e quando a validação do DNS do Francis terminar mudará para `READY=True`
+
+Garanta que o disco e POD subiram:
+
+`kubectl get pods,pvc`
+
+* A Prova Final 
+
+Acesse `https://meu-blog.francis.tcloud-devops.cloudtotvs.com.br` e a página de instalação do WordPress irá carregar.
+
+
+
+
+
+
+
 
 
 

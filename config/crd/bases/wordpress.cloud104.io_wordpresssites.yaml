@@ -47,7 +47,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: WordpressSiteSpec define o estado desejado pelo usuário (Spec)
+            description: WordpressSiteSpec defines the desired state of WordpressSite
             properties:
               database:
                 description: DatabaseSpec define a configuração do banco de dados
@@ -69,8 +69,33 @@ spec:
                 type: object
               domain:
                 type: string
+              ingressAnnotations:
+                additionalProperties:
+                  type: string
+                description: IngressAnnotations adiciona annotations livres no Ingress.
+                type: object
               ingressClassName:
                 type: string
+              tls:
+                description: TLS configura HTTPS via cert-manager.
+                properties:
+                  enabled:
+                    description: Enabled liga a emissão do certificado e o bloco TLS
+                      no Ingress.
+                    type: boolean
+                  issuerKind:
+                    default: ClusterIssuer
+                    description: IssuerKind escolhe entre "ClusterIssuer" (padrão)
+                      e "Issuer".
+                    enum:
+                    - ClusterIssuer
+                    - Issuer
+                    type: string
+                  issuerName:
+                    description: IssuerName é o nome do (Cluster)Issuer do cert-manager
+                      que emite o cert.
+                    type: string
+                type: object
               wordpress:
                 description: WordpressSpec define a configuração da aplicação WordPress
                 properties:

@@ -3,8 +3,14 @@ kind: WordpressSite
 metadata:
   name: meu-blog
 spec:
-  domain: meu-blog.201.157.243.78.nip.io
+  domain: meu-blog.francis.tcloud-devops.cloudtotvs.com.br
   ingressClassName: nginx
+  ingressAnnotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  tls:
+    enabled: true
+    issuerName: letsencrypt-prod
+    issuerKind: ClusterIssuer
   wordpress:
     replicas: 1
   database:
