@@ -182,3 +182,85 @@ Este diário documenta a jornada passo a passo, decisões arquiteturais e o trou
   * Refatoração do Factory e do `IngressEnsurer` para injetar anotações dinâmicas (`cert-manager.io/cluster-issuer`) de forma persistente.
 
   * Teste definitivo de Terra Arrasada validando a criação dinâmica de certificados Let's Encrypt com status `READY=True`.
+
+## 🌟 Arquitetura e Maturidade SRE
+
+Este operador foi empacotado focado em ambientes de produção, incluindo:
+* **Helm Chart Nativo:** Toda a instalação é orquestrada via Helm, parametrizando recursos, restrições de segurança (SecurityContext) e afinidades.
+* **RBAC Blindado:** A ServiceAccount possui acessos estritos (`Least Privilege`) apenas para manipulação dos workloads (Deployments, StatefulSets), rede e integração nativa com o **cert-manager** para provisionamento TLS.
+* **Leader Election:** Preparado para Alta Disponibilidade. Múltiplas réplicas do controlador podem rodar simultaneamente, utilizando Leases (`coordination.k8s.io`) para eleição segura do líder e prevenção de concorrência de reconciliação.
+
+## 🚀 Como usar
+
+A definição do `WordPress` foi projetada para abstrair a complexidade da infraestrutura, permitindo instanciar novos ambientes de forma declarativa.
+
+```yaml
+apiVersion: wordpress.cloud104.io/v1alpha1
+kind: WordPress
+metadata:
+  name: meu-blog
+  namespace: default
+spec:
+  # Adicione aqui as especificações do seu CRD
+  replicas: 1
+```
+
+## 🛠️ Instalação (Production Ready)
+
+O deploy do operador é inteiramente gerenciado pelo Helm Chart oficial incluso no repositório.
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/rodrigomicrosiga/wordpress-operator.git
+cd wordpress-operator
+
+# 2. Instale o Operador no cluster
+helm upgrade --install wordpress-operator charts/wordpress-operator -n wordpress-operator-system --create-namespace
+```
+## 🌟 Arquitetura e Maturidade SRE
+
+Este operador foi projetado para ambientes multitenant e entrega infraestrutura como código (IaC) de forma nativa:
+* **Helm Chart Nativo:** Instalação parametrizada orquestrada via Helm, controlando recursos, restrições de segurança (SecurityContext) e implantação limpa sem conflitos de *ownership*.
+* **RBAC Blindado:** A ServiceAccount possui acessos estritos (`Least Privilege`) limitados à manipulação de workloads (Deployments, StatefulSets), rede (Ingresses, Services), discos (PVCs) e integração nativa com o **cert-manager** (Certificates).
+* **Leader Election:** Preparado para Alta Disponibilidade. Múltiplas réplicas do controlador podem rodar simultaneamente, utilizando Leases (`coordination.k8s.io`) para eleição segura do líder e prevenção de concorrência.
+* **UX de Primeira Classe (K9s Ready):** Implementação de *Custom Columns* (`+kubebuilder:printcolumn`) para exibição em tempo real da saúde da instância (`Phase`) e da `URL` de acesso diretamente nas listagens do `kubectl` e k9s, com inteligência de protocolo (HTTP/HTTPS) baseada na configuração TLS.
+
+## 🚀 Como usar
+
+A definição do `WordpressSite` abstrai a complexidade da infraestrutura, permitindo instanciar novos ambientes, bancos de dados acoplados e certificados SSL com um único manifesto declarativo.
+
+```yaml
+apiVersion: wordpress.cloud104.io/v1alpha1
+kind: WordpressSite
+metadata:
+  name: meu-blog
+  namespace: default
+spec:
+  domain: meu-blog.empresa.com.br
+  wordpress:
+    image: wordpress:6.5-apache
+    replicas: 1
+    storageSize: 2Gi
+  database:
+    name: wordpressdb
+    user: wpuser
+    storageSize: 5Gi
+  tls:
+    enabled: true
+    issuerName: letsencrypt-prod
+    issuerKind: ClusterIssuer
+```
+
+## 🛠️ Instalação via Helm
+
+O deploy do operador é inteiramente gerenciado pelo Helm Chart oficial incluso no repositório.
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/rodrigomicrosiga/wordpress-operator.git
+cd wordpress-operator
+
+# 2. Instale o Operador no cluster (Namespace isolado)
+helm upgrade --install wordpress-operator charts/wordpress-operator -n wordpress-operator-system --create-namespace
+```
+

@@ -1,0 +1,19 @@
+apiVersion: wordpress.cloud104.io/v1alpha1
+kind: WordpressSite
+metadata:
+  name: meu-blog
+  namespace: default
+spec:
+  domain: meu-blog.francis.tcloud-devops.cloudtotvs.com.br
+  wordpress:
+    image: wordpress:6.5-apache
+    replicas: 1
+    storageSize: 2Gi
+  database:
+    name: wordpressdb
+    user: wpuser
+    storageSize: 5Gi
+  tls:
+    enabled: true
+    issuerName: letsencrypt-prod
+    issuerKind: ClusterIssuer

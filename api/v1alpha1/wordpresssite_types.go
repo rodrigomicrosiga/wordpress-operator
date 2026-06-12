@@ -95,6 +95,7 @@ type WordpressSiteStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".spec.domain"
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".status.url"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // WordpressSite is the Schema for the wordpresssites API

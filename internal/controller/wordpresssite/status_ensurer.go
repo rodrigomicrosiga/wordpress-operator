@@ -18,8 +18,13 @@ type StatusEnsurer struct {
 }
 
 func (e *StatusEnsurer) Reconcile(ctx context.Context, site *v1alpha1.WordpressSite) (ctrl.Result, error) {
-	// 1. Inicializa os dados básicos
-	site.Status.URL = "http://" + site.Spec.Domain
+	// 1. Inicializa os dados básicos com inteligência de protocolo
+	protocol := "http://"
+	if site.Spec.TLS != nil && site.Spec.TLS.Enabled {
+		protocol = "https://"
+	}
+	site.Status.URL = protocol + site.Spec.Domain
+
 	site.Status.ObservedGeneration = site.Generation
 
 	// 2. Checa a saúde do Banco de Dados (StatefulSet)

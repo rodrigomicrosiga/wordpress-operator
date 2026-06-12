@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "wordpress-operator.fullname" . }}-controller-manager
+  labels:
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/part-of: wordpress-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "wordpress-operator.fullname" . }}-manager-role
+rules:
+  # 1. Permissões para a CRD principal do WordPress
+  - apiGroups:
+      - wordpress.cloud104.io
+    resources:
+      - wordpresses
+      - wordpresses/status
+      - wordpresses/finalizers
+      - wordpresssites
+      - wordpresssites/status
+      - wordpresssites/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 2. Permissões para os Workloads padrão gerados pelo operador
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 3. Permissões de Networking (Ingress) <-- BLOCO CORRIGIDO
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 4. Permissões para Core (Rede, Configurações e Discos)
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+      - services
+      - configmaps
+      - persistentvolumeclaims
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 5. Permissões para o Cert-Manager (TLS Seguro)
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 6. Permissões para Leader Election (Evitar timeouts de cache no boot)
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+  # 7. Permissões para Eventos do Kubernetes
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "wordpress-operator.fullname" . }}-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "wordpress-operator.fullname" . }}-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "wordpress-operator.fullname" . }}-controller-manager
+    namespace: {{ .Release.Namespace }}
